@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package glossary;
+
+service GlossaryService {
+  // Получение всех терминов
+  rpc GetAllTerms (GetAllTermsRequest) returns (GetAllTermsResponse) {}
+  
+  // Получение термина по ID
+  rpc GetTermById (GetTermByIdRequest) returns (TermResponse) {}
+  
+  // Поиск термина по ключевому слову
+  rpc SearchTerm (SearchTermRequest) returns (TermResponse) {}
+  
+  // Создание нового термина
+  rpc CreateTerm (CreateTermRequest) returns (TermResponse) {}
+  
+  // Обновление термина
+  rpc UpdateTerm (UpdateTermRequest) returns (TermResponse) {}
+  
+  // Удаление термина
+  rpc DeleteTerm (DeleteTermRequest) returns (DeleteTermResponse) {}
+  
+  // Потоковая передача терминов
+  rpc StreamTerms (StreamTermsRequest) returns (stream TermResponse) {}
+  
+  // Проверка здоровья
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
+}
+
+// Сообщения для запросов и ответов
+
+message GetAllTermsRequest {
+  optional string category = 1;  // Фильтр по категории
+  optional string search = 2;    // Поисковой запрос
+  int32 page = 3;                // Номер страницы
+  int32 page_size = 4;           // Размер страницы
+}
+
+message GetAllTermsResponse {
+  repeated TermResponse terms = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 total_pages = 4;
+}
+
+message GetTermByIdRequest {
+  string term_id = 1;
+}
+
+message SearchTermRequest {
+  string keyword = 1;
+}
+
+message CreateTermRequest {
+  string term = 1;
+  string definition = 2;
+  optional string category = 3;
+  optional string examples = 4;
+  repeated string related_terms = 5;
+}
+
+message UpdateTermRequest {
+  string term_id = 1;
+  optional string term = 2;
+  optional string definition = 3;
+  optional string category = 4;
+  optional string examples = 5;
+  repeated string related_terms = 6;
+}
+
+message DeleteTermRequest {
+  string term_id = 1;
+}
+
+message DeleteTermResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message StreamTermsRequest {
+  optional string category = 1;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  string status = 1;
+  string timestamp = 2;
+  string version = 3;
+}
+
+// Модель термина
+message Term {
+  string id = 1;
+  string term = 2;
+  string definition = 3;
+  string category = 4;
+  optional string examples = 5;
+  repeated string related_terms = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+// Ответ с термином
+message TermResponse {
+  Term term = 1;
+}
