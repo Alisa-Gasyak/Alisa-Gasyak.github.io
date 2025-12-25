@@ -6,11 +6,8 @@ from app.routes import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Управление жизненным циклом приложения"""
-    # Запуск
     init_db()
     yield
-    # Завершение
     close_db()
 
 app = FastAPI(
