@@ -45,4 +45,4 @@ docker-compose up -d
 
 4. Проверить работу
 curl http://localhost:8000/health
-Собрать образ:
+
