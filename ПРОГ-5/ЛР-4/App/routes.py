@@ -8,7 +8,7 @@ from app.database import (
 
 router = APIRouter(tags=["glossary"])
 
-@router.get("/terms", response_model=List[TermResponse])
+@router.get("/terms", response_model=List[TermResponse]) #функция для связывание с сервисом
 async def get_all_terms_endpoint(
     category: Optional[str] = Query(None, description="Фильтр по категории"),
     search: Optional[str] = Query(None, description="Поиск по термину или определению")
