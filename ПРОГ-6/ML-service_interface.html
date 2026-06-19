@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>ML Model Service - Предсказания</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+            font-size: 13px;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 4px;
+            box-sizing: border-box;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select {
+            background: white;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .btn-delete {
+            background-color: #FF4444;
+            color: white;
+        }
+        .btn-add {
+            background-color: #2196F3;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .btn-predict {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-csv {
+            background-color: #FF9800;
+            color: white;
+        }
+        .response {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .response pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .info {
+            background-color: #e7f3ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+            font-size: 14px;
+        }
+        .scroll-wrap {
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>ML Model Service API</h2>
+        <h3>Выбор модели для предсказания</h3>
+        
+        <table id="modelTable">
+            <thead>
+                <tr><th>Выбрать</th><th>UID</th><th>Имя файла</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><input type="radio" name="model" value="model_v1"></td><td>a1b2c3d4-e5f6-7890-abcd-e1234567890</td><td>credit_model_v1.pkl</td></tr>
+                <tr><td><input type="radio" name="model" value="model_v2"></td><td>b2c3d4e5-f6a7-8901-bcde-f12345678901</td><td>credit_model_v2.pkl</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Ввод признаков клиента</h3>
+        <div class="scroll-wrap">
+            <table id="featuresTable">
+                <thead>
+                    <tr>
+                        <th style="min-width:30px;">№</th>
+                        <th style="min-width:70px;">Возраст</th>
+                        <th style="min-width:80px;">Пол</th>
+                        <th style="min-width:100px;">Образование</th>
+                        <th style="min-width:80px;">Доход</th>
+                        <th style="min-width:70px;">Стаж (мес)</th>
+                        <th style="min-width:100px;">Тип жилья</th>
+                        <th style="min-width:100px;">Сумма кредита</th>
+                        <th style="min-width:100px;">Цель кредита</th>
+                        <th style="min-width:70px;">Ставка %</th>
+                        <th style="min-width:80px;">Доля дохода</th>
+                        <th style="min-width:100px;">Ист. кредита (мес)</th>
+                        <th style="min-width:80px;">Кред. рейтинг</th>
+                        <th style="min-width:80px;">Просрочки</th>
+                        <th style="min-width:70px;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><input type="number" class="person_age" value="30" step="0.1"></td>
+                        <td>
+                            <select class="person_gender">
+                                <option value="female">Женский</option>
+                                <option value="male">Мужской</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="person_education">
+                                <option value="High School">Среднее</option>
+                                <option value="Bachelor">Бакалавр</option>
+                                <option value="Master" selected>Магистр</option>
+                                <option value="Doctorate">Доктор</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="person_income" value="50000" step="0.01"></td>
+                        <td><input type="number" class="person_emp_exp" value="24"></td>
+                        <td>
+                            <select class="person_home_ownership">
+                                <option value="RENT">Аренда</option>
+                                <option value="OWN" selected>Собственность</option>
+                                <option value="MORTGAGE">Ипотека</option>
+                                <option value="OTHER">Другое</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="loan_amnt" value="100000" step="0.01"></td>
+                        <td>
+                            <select class="loan_intent">
+                                <option value="PERSONAL">Личное</option>
+                                <option value="EDUCATION" selected>Образование</option>
+                                <option value="MEDICAL">Медицина</option>
+                                <option value="VENTURE">Бизнес</option>
+                                <option value="HOMEIMPROVEMENT">Ремонт</option>
+                                <option value="DEBTCONSOLIDATION">Консолидация</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="loan_int_rate" value="12.5" step="0.01"></td>
+                        <td><input type="number" class="loan_percent_income" value="0.25" step="0.01"></td>
+                        <td><input type="number" class="cb_person_cred_hist_length" value="36"></td>
+                        <td><input type="number" class="credit_score" value="700"></td>
+                        <td>
+                            <select class="previous_loan_defaults_on_file">
+                                <option value="No" selected>Нет</option>
+                                <option value="Yes">Да</option>
+                            </select>
+                        </td>
+                        <td><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn-add" onclick="addRow()">[+] Добавить запись</button>
+
+        <h3>Действия с предсказаниями</h3>
+        <button class="btn-predict" onclick="makePrediction()"> Сделать предсказание</button>
+        <button class="btn-csv" onclick="uploadCSV()"> Загрузить CSV</button>
+        
+        <div class="info" id="infoMessage">
+             Выберите модель из таблицы выше для активации действий
+        </div>
+
+        <div class="response">
+            <strong>Ответ от модели:</strong>
+            <pre id="responseText">Тут будет результат предсказания...</pre>
+        </div>
+    </div>
+
+    <script>
+        let rowCounter = 1;
+        
+        // === ОТСЛЕЖИВАНИЕ ВЫБОРА МОДЕЛИ ===
+        document.querySelectorAll('input[name="model"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const info = document.getElementById('infoMessage');
+                if (this.checked) {
+                    info.innerHTML = ' Модель выбрана. Можно выполнять предсказания.';
+                    info.style.backgroundColor = '#d4edda';
+                    info.style.borderLeftColor = '#28a745';
+                }
+            });
+        });
+        
+        // === ДОБАВЛЕНИЕ СТРОКИ ===
+        function addRow() {
+            rowCounter++;
+            const tbody = document.querySelector('#featuresTable tbody');
+            const newRow = tbody.insertRow();
+            newRow.innerHTML = `
+                <td>${rowCounter}</td>
+                <td><input type="number" class="person_age" value="30" step="0.1"></td>
+                <td>
+                    <select class="person_gender">
+                        <option value="female">Женский</option>
+                        <option value="male">Мужской</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="person_education">
+                        <option value="High School">Среднее</option>
+                        <option value="Bachelor">Бакалавр</option>
+                        <option value="Master" selected>Магистр</option>
+                        <option value="Doctorate">Доктор</option>
+                    </select>
+                </td>
+                <td><input type="number" class="person_income" value="50000" step="0.01"></td>
+                <td><input type="number" class="person_emp_exp" value="24"></td>
+                <td>
+                    <select class="person_home_ownership">
+                        <option value="RENT">Аренда</option>
+                        <option value="OWN" selected>Собственность</option>
+                        <option value="MORTGAGE">Ипотека</option>
+                        <option value="OTHER">Другое</option>
+                    </select>
+                </td>
+                <td><input type="number" class="loan_amnt" value="100000" step="0.01"></td>
+                <td>
+                    <select class="loan_intent">
+                        <option value="PERSONAL">Личное</option>
+                        <option value="EDUCATION" selected>Образование</option>
+                        <option value="MEDICAL">Медицина</option>
+                        <option value="VENTURE">Бизнес</option>
+                        <option value="HOMEIMPROVEMENT">Ремонт</option>
+                        <option value="DEBTCONSOLIDATION">Консолидация</option>
+                    </select>
+                </td>
+                <td><input type="number" class="loan_int_rate" value="12.5" step="0.01"></td>
+                <td><input type="number" class="loan_percent_income" value="0.25" step="0.01"></td>
+                <td><input type="number" class="cb_person_cred_hist_length" value="36"></td>
+                <td><input type="number" class="credit_score" value="700"></td>
+                <td>
+                    <select class="previous_loan_defaults_on_file">
+                        <option value="No" selected>Нет</option>
+                        <option value="Yes">Да</option>
+                    </select>
+                </td>
+                <td><button class="btn-delete" onclick="deleteRow(this)">X</button></td>
+            `;
+        }
+        
+        // === УДАЛЕНИЕ СТРОКИ ===
+        function deleteRow(btn) {
+            const row = btn.closest('tr');
+            const tbody = row.parentElement;
+            if (tbody.children.length > 1) {
+                tbody.removeChild(row);
+                // Перенумерация
+                for (let i = 0; i < tbody.children.length; i++) {
+                    tbody.children[i].cells[0].innerText = i + 1;
+                }
+                rowCounter = tbody.children.length;
+            } else {
+                alert("Нельзя удалить последнюю запись!");
+            }
+        }
+        
+        // === ПОЛУЧЕНИЕ ВЫБРАННОЙ МОДЕЛИ ===
+        function getSelectedModel() {
+            const selected = document.querySelector('input[name="model"]:checked');
+            if (!selected) {
+                alert("Пожалуйста, выберите модель!");
+                return null;
+            }
+            return {
+                uid: selected.value,
+                name: selected.closest('tr').cells[2].innerText
+            };
+        }
+        
+        // === СБОР ДАННЫХ ИЗ ТАБЛИЦЫ ===
+        function getClientsFromTable() {
+            const clients = [];
+            const rows = document.querySelectorAll('#featuresTable tbody tr');
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                clients.push({
+                    person_age: parseFloat(row.querySelector('.person_age').value) || 0,
+                    person_gender: row.querySelector('.person_gender').value,
+                    person_education: row.querySelector('.person_education').value,
+                    person_income: parseFloat(row.querySelector('.person_income').value) || 0,
+                    person_emp_exp: parseFloat(row.querySelector('.person_emp_exp').value) || 0,
+                    person_home_ownership: row.querySelector('.person_home_ownership').value,
+                    loan_amnt: parseFloat(row.querySelector('.loan_amnt').value) || 0,
+                    loan_intent: row.querySelector('.loan_intent').value,
+                    loan_int_rate: parseFloat(row.querySelector('.loan_int_rate').value) || 0,
+                    loan_percent_income: parseFloat(row.querySelector('.loan_percent_income').value) || 0,
+                    cb_person_cred_hist_length: parseFloat(row.querySelector('.cb_person_cred_hist_length').value) || 0,
+                    credit_score: parseFloat(row.querySelector('.credit_score').value) || 0,
+                    previous_loan_defaults_on_file: row.querySelector('.previous_loan_defaults_on_file').value
+                });
+            }
+            return clients;
+        }
+        
+        // === ПАРСИНГ CSV В МАССИВ ОБЪЕКТОВ ===
+        function parseCSVToObjects(csvData) {
+            const lines = csvData.trim().split('\n').filter(line => line.trim());
+            if (lines.length < 2) {
+                alert("CSV файл пуст или содержит только заголовки!");
+                return [];
+            }
+            
+            // Читаем заголовки и приводим к нижнему регистру
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            
+            // Проверяем наличие обязательных колонок
+            const required = ['person_age', 'person_gender', 'person_education', 'person_income', 
+                             'person_emp_exp', 'person_home_ownership', 'loan_amnt', 'loan_intent',
+                             'loan_int_rate', 'loan_percent_income', 'cb_person_cred_hist_length',
+                             'credit_score', 'previous_loan_defaults_on_file'];
+            
+            const missing = required.filter(col => !headers.includes(col));
+            if (missing.length > 0) {
+                alert(`В CSV отсутствуют колонки: ${missing.join(', ')}`);
+                return [];
+            }
+            
+            const clients = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim());
+                const client = {};
+                
+                required.forEach((col, idx) => {
+                    const colIndex = headers.indexOf(col);
+                    const rawValue = values[colIndex] || '';
+                    
+                    // Определяем тип данных на основе колонки
+                    if (['person_gender', 'person_education', 'person_home_ownership', 
+                         'loan_intent', 'previous_loan_defaults_on_file'].includes(col)) {
+                        client[col] = rawValue; // Строковые значения
+                    } else {
+                        client[col] = parseFloat(rawValue) || 0; // Числовые
+                    }
+                });
+                
+                clients.push(client);
+            }
+            return clients;
+        }
+        
+        // === ФУНКЦИЯ ПРЕДСКАЗАНИЯ ===
+        function predict(clients, model) {
+            // Имитация работы ML-модели
+            return clients.map((client, index) => {
+                let score = 50;
+                
+                // Credit score влияет сильно
+                if (client.credit_score > 750) score += 25;
+                else if (client.credit_score > 700) score += 15;
+                else if (client.credit_score > 650) score += 5;
+                else if (client.credit_score < 600) score -= 20;
+                
+                // Доход
+                if (client.person_income > 70000) score += 15;
+                else if (client.person_income > 50000) score += 8;
+                else if (client.person_income < 20000) score -= 15;
+                
+                // Стаж работы
+                if (client.person_emp_exp > 36) score += 10;
+                else if (client.person_emp_exp > 12) score += 5;
+                else if (client.person_emp_exp === 0) score -= 10;
+                
+                // Доля дохода по кредиту
+                if (client.loan_percent_income < 0.2) score += 10;
+                else if (client.loan_percent_income > 0.4) score -= 15;
+                
+                // Просрочки в прошлом
+                if (client.previous_loan_defaults_on_file === 'Yes') score -= 30;
+                
+                // Тип жилья
+                if (client.person_home_ownership === 'OWN') score += 10;
+                else if (client.person_home_ownership === 'MORTGAGE') score += 5;
+                else if (client.person_home_ownership === 'RENT') score -= 5;
+                
+                // Возраст
+                if (client.person_age > 21 && client.person_age < 60) score += 8;
+                else if (client.person_age < 21) score -= 10;
+                
+                // Длина кредитной истории
+                if (client.cb_person_cred_hist_length > 24) score += 8;
+                else if (client.cb_person_cred_hist_length < 6) score -= 10;
+                
+                // Нормализация
+                score = Math.max(0, Math.min(100, score));
+                
+                return {
+                    ...client,
+                    score: Math.round(score),
+                    approval: score >= 60 ? 'ОДОБРЕНО' : 'ОТКАЗАНО',
+                    probability: (score / 100).toFixed(2)
+                };
+            });
+        }
+        
+        // === ОСНОВНАЯ ФУНКЦИЯ ПРЕДСКАЗАНИЯ ===
+        function makePrediction() {
+            const model = getSelectedModel();
+            if (!model) return;
+            
+            const clients = getClientsFromTable();
+            if (clients.length === 0) {
+                alert("Нет данных для предсказания!");
+                return;
+            }
+            
+            const responseDiv = document.getElementById('responseText');
+            responseDiv.innerHTML = " Выполняется предсказание...\n";
+            
+            setTimeout(() => {
+                const results = predict(clients, model);
+                renderResults(results, model, 'Табличный ввод');
+            }, 500);
+        }
+        
+        // === ОТОБРАЖЕНИЕ РЕЗУЛЬТАТОВ ===
+        function renderResults(results, model, source) {
+            const responseDiv = document.getElementById('responseText');
+            let result = ` Модель: ${model.name}\n`;
+            result += ` UID: ${model.uid}\n`;
+            result += ` Источник: ${source}\n`;
+            result += ` Количество записей: ${results.length}\n`;
+            result += "═".repeat(65) + "\n\n";
+            
+            results.forEach((client, index) => {
+                result += ` Клиент #${index + 1}:\n`;
+                result += `   Возраст: ${client.person_age}\n`;
+                result += `   Пол: ${client.person_gender === 'female' ? 'Женский' : 'Мужской'}\n`;
+                result += `   Образование: ${client.person_education}\n`;
+                result += `   Доход: ${client.person_income.toLocaleString()} ₽\n`;
+                result += `   Стаж: ${client.person_emp_exp} мес.\n`;
+                result += `   Жилье: ${client.person_home_ownership}\n`;
+                result += `   Сумма кредита: ${client.loan_amnt.toLocaleString()} ₽\n`;
+                result += `   Цель: ${client.loan_intent}\n`;
+                result += `   Ставка: ${client.loan_int_rate}%\n`;
+                result += `   Доля дохода: ${(client.loan_percent_income * 100).toFixed(1)}%\n`;
+                result += `   Ист. кредита: ${client.cb_person_cred_hist_length} мес.\n`;
+                result += `   Кред. рейтинг: ${client.credit_score}\n`;
+                result += `   Просрочки: ${client.previous_loan_defaults_on_file === 'Yes' ? 'Были' : 'Нет'}\n`;
+                result += `   Скоринг: ${client.score}%\n`;
+                result += `   Решение: ${client.approval} (вероятность: ${client.probability})\n`;
+                result += "─".repeat(50) + "\n";
+            });
+            
+            // Статистика
+            const approved = results.filter(r => r.approval === 'ОДОБРЕНО').length;
+            result += `\n Итоговая статистика:\n`;
+            result += `  Одобрено: ${approved} из ${results.length} (${(approved/results.length*100).toFixed(1)}%)\n`;
+            result += `  Отказано: ${results.length - approved} из ${results.length} (${((results.length-approved)/results.length*100).toFixed(1)}%)\n`;
+            
+            responseDiv.innerHTML = result;
+        }
+        
+        // === ЗАГРУЗКА И ОБРАБОТКА CSV ===
+        function uploadCSV() {
+            const model = getSelectedModel();
+            if (!model) return;
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const csvData = event.target.result;
+                        const clients = parseCSVToObjects(csvData);
+                        
+                        if (clients.length === 0) {
+                            alert("Не удалось распарсить CSV или файл пуст!");
+                            return;
+                        }
+                        
+                        // Сразу делаем предсказание без заполнения таблицы
+                        const results = predict(clients, model);
+                        renderResults(results, model, `CSV файл (${file.name})`);
+                        
+                    } catch (error) {
+                        alert(`Ошибка при обработке CSV: ${error.message}`);
+                        console.error(error);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
